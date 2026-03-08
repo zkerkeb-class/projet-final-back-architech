@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requestMagicLink, verifyMagicLink } from "../controllers/auth.controller.js";
+import { requestMagicLink, verifyMagicLink } from "../controllers/authcontroller.js";
 
 const router = Router();
 

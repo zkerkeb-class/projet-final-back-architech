@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import User from "../schemas/user.schema.js";
-import MagicToken from "../schemas/magicToken.schema.js";
+import User from "../schemas/user.js";
+import MagicToken from "../schemas/magicLink.js";
 import { sendMagicLink } from "../utils/sendEmail.js";
 
 // POST /api/auth/login
