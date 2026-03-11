@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const magicLinkSchema = new mongoose.Schema({
-  email: {
+  mail: {
     type: String,
     required: true,
   },

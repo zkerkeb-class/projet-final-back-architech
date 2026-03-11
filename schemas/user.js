@@ -10,9 +10,18 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    mail: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,      
+        trim: true,           
+        match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+
+    },
     account_money: {
        type: Number,
     },
-});
+}, { versionKey: false });
 
 export default mongoose.model("user", userSchema);

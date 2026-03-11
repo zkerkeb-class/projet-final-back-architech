@@ -8,31 +8,31 @@ import { sendMagicLink } from "../utils/sendEmail.js";
 // User requests a magic link
 export const requestMagicLink = async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    const { mail } = req.body;
+    if (!mail) return res.status(400).json({ message: "Email is required" });
 
     // Create user if they don't exist yet
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ mail });
     if (!user) {
-      user = new User({ email, username: email.split("@")[0] });
+      user = new User({ mail, username: mail.split("@")[0] });
       await user.save();
     }
 
     // Delete any existing tokens for this email
-    await MagicToken.deleteMany({ email });
+    await MagicToken.deleteMany({ mail });
 
     // Generate a secure random token
     const token = crypto.randomBytes(32).toString("hex");
 
     // Save token to database, expires in 15 minutes
     await MagicToken.create({
-      email,
+      mail,
       token,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
     });
 
     // Send the magic link email
-    await sendMagicLink(email, token);
+    await sendMagicLink(mail, token);
 
     res.status(200).json({ message: "Magic link sent to your email!" });
   } catch (error) {
@@ -58,7 +58,7 @@ export const verifyMagicLink = async (req, res) => {
     }
 
     // Find the user
-    const user = await User.findOne({ email: magicToken.email });
+    const user = await User.findOne({ mail: magicToken.mail });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Delete the used token (one time use only)
@@ -66,7 +66,7 @@ export const verifyMagicLink = async (req, res) => {
 
     // Generate a JWT session token
     const jwtToken = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, mail: user.mail },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -76,7 +76,7 @@ export const verifyMagicLink = async (req, res) => {
       token: jwtToken,
       user: {
         id: user._id,
-        email: user.email,
+        mail: user.mail,
         username: user.username,
       },
     });
