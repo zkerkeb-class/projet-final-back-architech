@@ -7,23 +7,30 @@ import (
 	"baymean/core/internal/domain"
 	"baymean/core/internal/engine"
 	"baymean/core/internal/vault"
+	bolt "go.etcd.io/bbolt"
 )
 
 func main() {
-	// 1. Créer le Vault (Mock SIM)
-	sim, err := vault.NewSIMMock()
+	// 1. Ouvrir BoltDB en premier
+	db, err := bolt.Open("bayment.db", 0600, nil)
 	if err != nil {
-		log.Fatal("Erreur création SIM:", err)
+		log.Fatal("Erreur ouverture BoltDB:", err)
+	}
+	defer db.Close()
+
+	// 2. Créer le Vault persistant (identité stable entre sessions)
+	sim, err := vault.NewPersistentVault(db, "1234")
+	if err != nil {
+		log.Fatal("Erreur création Vault:", err)
 	}
 
-	// 2. Démarrer le moteur avec BoltDB
-	e, err := engine.NewEngine("bayment.db", sim)
+	// 3. Démarrer le moteur
+	e, err := engine.NewEngine(db, sim)
 	if err != nil {
 		log.Fatal("Erreur démarrage moteur:", err)
 	}
-	defer e.DB.Close()
 
-	// 3. Créer un fragment genesis (le premier billet, créé de nulle part)
+	// 4. Créer un fragment genesis
 	alice := string(sim.GetPublicKey())
 	genesis := domain.Fragment{
 		ParentIDs: []string{},
@@ -36,18 +43,18 @@ func main() {
 
 	err = e.CreateGenesis(genesis)
 	if err != nil {
-   		 log.Fatal("Erreur sauvegarde genesis:", err)
+		log.Fatal("Erreur sauvegarde genesis:", err)
 	}
-	// 4. Simuler un paiement : Alice paie 30€ à Bob
+
+	// 5. Alice paie 30€ à Bob
 	bobPub := "bob_public_key_mock"
 	err = e.Split(genesis.ID, 30.0, bobPub)
 	if err != nil {
 		log.Fatal("Erreur split:", err)
 	}
-
 	fmt.Println("Split réussi : 30€ → Bob, 20€ → Alice (mergé)")
 
-	// 5. Tenter un double spend — doit échouer
+	// 6. Tenter un double spend — doit échouer
 	err = e.Split(genesis.ID, 10.0, bobPub)
 	if err != nil {
 		fmt.Println("Double spend bloqué ✓:", err)

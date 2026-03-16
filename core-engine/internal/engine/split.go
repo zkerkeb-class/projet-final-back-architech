@@ -17,21 +17,6 @@ type Engine struct {
 	Vault vault.SecureVault
 }
 
-func NewEngine(dbPath string, v vault.SecureVault) (*Engine, error) {
-	db, err := bolt.Open(dbPath, 0600, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Crée le bucket s'il n'existe pas
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(bucketName)
-		return err
-	})
-
-	return &Engine{DB: db, Vault: v}, err
-}
-
 func (e *Engine) Split(parentID string, amount float64, recipientPub string) error {
 	return e.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketName)
@@ -158,4 +143,12 @@ func (e *Engine) CreateGenesis(f domain.Fragment) error {
 		b := tx.Bucket(bucketName)
 		return put(b, f)
 	})
+}
+
+func NewEngine(db *bolt.DB, v vault.SecureVault) (*Engine, error) {
+    err := db.Update(func(tx *bolt.Tx) error {
+        _, err := tx.CreateBucketIfNotExists(bucketName)
+        return err
+    })
+    return &Engine{DB: db, Vault: v}, err
 }
