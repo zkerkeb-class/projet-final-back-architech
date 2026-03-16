@@ -152,3 +152,13 @@ func NewEngine(db *bolt.DB, v vault.SecureVault) (*Engine, error) {
     })
     return &Engine{DB: db, Vault: v}, err
 }
+
+func (e *Engine) GetBalance(ownerPub string) float64 {
+    var total float64
+    e.DB.View(func(tx *bolt.Tx) error {
+        b := tx.Bucket(bucketName)
+        _, total = e.findUnspentFragments(b, ownerPub, "")
+        return nil
+    })
+    return total
+}
