@@ -11,6 +11,8 @@ import (
 )
 
 func main() {
+    //TODO : Create DB for Phone OS (probably SQLite) and function to retrieve money data from it (see for Token connection as well when offline)
+    //TODO : Create function to save money data (and maybe Token) on Phone OS
     db, err := bolt.Open("bayment.db", 0600, nil)
     if err != nil {
         log.Fatal(err)
