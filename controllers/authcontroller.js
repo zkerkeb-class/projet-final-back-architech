@@ -13,10 +13,18 @@ export const requestMagicLink = async (req, res) => {
     const { mail } = req.body;
     if (!mail) return res.status(400).json({ message: "Email is required" });
 
-    // Create user if they don't exist yet
     let user = await User.findOne({ mail });
     if (!user) {
-      user = new User({ mail, username: mail.split("@")[0] });
+      // Auto-increment id just like createUser does
+      const lastUser = await User.findOne().sort({ id: -1 });
+      const newId = lastUser ? lastUser.id + 1 : 1;
+
+      user = new User({ 
+        id: newId,
+        mail, 
+        username: mail.split("@")[0],
+        account_money: 0
+      });
       await user.save();
     }
 
