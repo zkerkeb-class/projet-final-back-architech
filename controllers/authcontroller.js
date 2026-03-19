@@ -7,6 +7,8 @@ import { sendMagicLink } from "../utils/sendEmail.js";
 // POST /auth/login
 // User requests a magic link
 export const requestMagicLink = async (req, res) => {
+  console.log('📨 Login request received:', req.body);
+  console.log('📨 From IP:', req.ip);
   try {
     const { mail } = req.body;
     if (!mail) return res.status(400).json({ message: "Email is required" });
